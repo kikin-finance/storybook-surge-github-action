@@ -8,7 +8,7 @@ LABEL "com.github.actions.color"="#5CC18D"
 LABEL "repository"="https://github.com/beaussart/storybook-surge-github-action"
 LABEL "homepage"="https://github.com/beaussart/storybook-surge-github-action"
 
-RUN apt-get update && apt-get install jq
+RUN apt-get update && apt-get install -y  jq
 RUN npm install --global surge@0.20.1
 
 COPY ./entrypoint.sh /entrypoint.sh
