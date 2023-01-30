@@ -38,7 +38,7 @@ if ! deployment_id=$(echo "${deployment}" | jq '.id'); then
   exit 3
 fi
 
-if ! ./node_modules/.bin/build-storybook; then
+if ! npm run build-storybook; then
   echo "Building of storybook failed" 1>&2
   exit 4
 fi
