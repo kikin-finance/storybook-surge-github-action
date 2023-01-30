@@ -21,6 +21,9 @@ if ! deployment=$(curl -s \
   exit 1
 fi
 
+# what's in here?
+echo $(ls)
+
 if [ -e yarn.lock ]; then
   if ! yarn install --force; then
     echo "yarn install failed" 1>&2
