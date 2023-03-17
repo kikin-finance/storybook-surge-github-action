@@ -8,7 +8,8 @@ branch=$(echo $GITHUB_REF | sed "s/refs\/heads\///g")
 
 sanitized_repo=$(echo $repo | sed "s/\//-/g")
 sanitized_branch=$(echo $branch | sed "s/\//-/g")
-storybook="${sanitized_repo}-storybook-${sanitized_branch}"
+storybook_long="${sanitized_repo}-storybook-${sanitized_branch}"
+storybook=$(echo $storybook_long | cut -c 1-63)
 storybook_url="https://${storybook}.surge.sh"
 
 if ! deployment=$(curl -s \
@@ -20,9 +21,6 @@ if ! deployment=$(curl -s \
   echo "POSTing deployment status failed, exiting (not failing build)" 1>&2
   exit 1
 fi
-
-# what's in here?
-echo $(ls)
 
 if [ -e yarn.lock ]; then
   if ! yarn install --force; then
