@@ -22,7 +22,16 @@ if ! deployment=$(curl -s \
   exit 1
 fi
 
-if [ -e yarn.lock ]; then
+build_cmd="npm run build-storybook"
+
+if [ -e pnpm-lock.yaml ]; then
+  corepack enable
+  if ! pnpm install --frozen-lockfile; then
+    echo "pnpm install failed" 1>&2
+    exit 2
+  fi
+  build_cmd="pnpm run build-storybook"
+elif [ -e yarn.lock ]; then
   if ! yarn install --force; then
     echo "yarn install failed" 1>&2
     exit 2
@@ -39,7 +48,7 @@ if ! deployment_id=$(echo "${deployment}" | jq '.id'); then
   exit 3
 fi
 
-if ! npm run build-storybook; then
+if ! $build_cmd; then
   echo "Building of storybook failed" 1>&2
   exit 4
 fi
