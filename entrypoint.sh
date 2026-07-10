@@ -9,7 +9,9 @@ branch=$(echo $GITHUB_REF | sed "s/refs\/heads\///g")
 sanitized_repo=$(echo $repo | sed "s/\//-/g")
 sanitized_branch=$(echo $branch | sed "s/\//-/g")
 storybook_long="${sanitized_repo}-storybook-${sanitized_branch}"
-storybook=$(echo $storybook_long | cut -c 1-63)
+# A DNS label is capped at 63 chars and may not end in a hyphen (RFC 1123), so
+# truncating mid-name can leave a trailing hyphen that strict clients refuse to resolve.
+storybook=$(echo $storybook_long | cut -c 1-63 | sed "s/-*$//")
 storybook_url="https://${storybook}.surge.sh"
 
 if ! deployment=$(curl -s \
