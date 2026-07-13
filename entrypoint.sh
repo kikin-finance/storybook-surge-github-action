@@ -9,9 +9,18 @@ branch=$(echo $GITHUB_REF | sed "s/refs\/heads\///g")
 sanitized_repo=$(echo $repo | sed "s/\//-/g")
 sanitized_branch=$(echo $branch | sed "s/\//-/g")
 storybook_long="${sanitized_repo}-storybook-${sanitized_branch}"
-# A DNS label is capped at 63 chars and may not end in a hyphen (RFC 1123), so
-# truncating mid-name can leave a trailing hyphen that strict clients refuse to resolve.
-storybook=$(echo $storybook_long | cut -c 1-63 | sed "s/-*$//")
+# A DNS label is capped at 63 chars and may not end in a hyphen (RFC 1123). When the
+# name fits, use it verbatim so existing URLs stay stable. When it doesn't, truncate to
+# leave room for a hash of the full name and append it, so two branches that share a
+# prefix land on distinct domains instead of silently overwriting each other. Trailing
+# hyphens are stripped from the stem so strict clients (e.g. Chrome) can resolve it.
+if [ ${#storybook_long} -le 63 ]; then
+  storybook=$(echo "$storybook_long" | sed "s/-*$//")
+else
+  hash=$(echo "$storybook_long" | sha1sum | cut -c 1-6)
+  stem=$(echo "$storybook_long" | cut -c 1-56 | sed "s/-*$//")
+  storybook="${stem}-${hash}"
+fi
 storybook_url="https://${storybook}.surge.sh"
 
 if ! deployment=$(curl -s \
