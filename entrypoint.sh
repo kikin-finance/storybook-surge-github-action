@@ -6,8 +6,16 @@ repo=$GITHUB_REPOSITORY
 user_access_token=${GITHUB_TOKEN:?"Missing GITHUB_TOKEN environment variable"}
 branch=$(echo $GITHUB_REF | sed "s/refs\/heads\///g")
 
-sanitized_repo=$(echo $repo | sed "s/\//-/g")
-sanitized_branch=$(echo $branch | sed "s/\//-/g")
+# A surge subdomain is a single DNS label, so every character must be [a-z0-9-].
+# Map anything else (slashes, dots, underscores, uppercase) to a hyphen rather than
+# rejecting the ref: a dot would otherwise split the domain across levels and an
+# unsanitized branch would silently fail to publish. Collapse runs and trim the ends.
+sanitize() {
+  echo "$1" | tr 'A-Z' 'a-z' \
+    | sed -e 's/[^a-z0-9]/-/g' -e 's/-\{2,\}/-/g' -e 's/^-*//' -e 's/-*$//'
+}
+sanitized_repo=$(sanitize "$repo")
+sanitized_branch=$(sanitize "$branch")
 storybook_long="${sanitized_repo}-storybook-${sanitized_branch}"
 # A DNS label is capped at 63 chars and may not end in a hyphen (RFC 1123). When the
 # name fits, use it verbatim so existing URLs stay stable. When it doesn't, truncate to
